@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 
 
 public class IconChanger {
@@ -43,7 +44,7 @@ public class IconChanger {
 			loadCredentials();
 		}
 
-		jda = JDABuilder.createLight(discordToken).build();
+		jda = JDABuilder.createLight(discordToken).enableIntents(GatewayIntent.MESSAGE_CONTENT).build();
 		jda.getPresence().setStatus(OnlineStatus.ONLINE);
 		jda.addEventListener(new Setup());
 		
