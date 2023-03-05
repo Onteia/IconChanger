@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.util.HashMap;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -23,6 +24,13 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 
+// TODO: 
+// 	finish the description of this file
+// 	make the botId in Setup.java take the id from config.properties
+//		instead of a hard-coded value
+
+// Entry point of IconChanger
+// does stuff
 
 public class IconChanger {
 
@@ -37,6 +45,7 @@ public class IconChanger {
 	public static String test_server = "264217465305825281";
 	public static String test_channel = "280546532728504320";
 	
+	public static HashMap<String, Server> map = new HashMap<String, Server>();
 	private final static Logger LOG = LoggerFactory.getLogger(IconChanger.class);
 	
 	
@@ -57,7 +66,7 @@ public class IconChanger {
 		}
 
 		// set up JDA
-		jda = JDABuilder.createLight(discordToken).enableIntents(GatewayIntent.MESSAGE_CONTENT).build();
+		jda = JDABuilder.createLight(discordToken).build();
 		jda.getPresence().setStatus(OnlineStatus.ONLINE);
 		jda.addEventListener(new Setup());
 		
@@ -80,23 +89,28 @@ public class IconChanger {
 		
 		// if the channel goes live
 		eventManager.onEvent(ChannelGoLiveEvent.class, event -> {
-			channelWentLive();
+			String channelId = event.getChannel().getId();
+			channelWentLive(channelId);
+			
 		});
 		
 		
 		// if the channel goes offline
 		eventManager.onEvent(ChannelGoOfflineEvent.class, event -> {
-			channelWentOffline();
+			String channelId = event.getChannel().getId();
+			channelWentOffline(channelId);
 		});
 	}
 	
-	private static void channelWentLive() {
+	private static void channelWentLive(String channelId) {
+		
+		//hash map the channelUserId to get the Server object
 		
 		System.out.println("live poggies omg omg omg");
 		
 	}
 	
-	private static void channelWentOffline() {
+	private static void channelWentOffline(String channelId) {
 		
 		System.out.println("offline sadgies waa waa waa");
 		
