@@ -22,7 +22,7 @@ import com.github.twitch4j.events.ChannelGoOfflineEvent;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
-import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.entities.Activity;
 
 // TODO: 
 // 	finish the description of this file
@@ -40,7 +40,8 @@ public class IconChanger {
 	private static String discordToken;
 	private static String twitchToken;
 	private static final String CONFIG_FILE = "src/config.properties";
-	private static String THIS_FOLDER_PATH;
+	public static String THIS_FOLDER_PATH;
+	public static String IMAGE_FOLDER_PATH;
 	
 	public static String test_server = "264217465305825281";
 	public static String test_channel = "280546532728504320";
@@ -57,9 +58,11 @@ public class IconChanger {
 			Properties prop = new Properties();
 			prop.load(config);
 			THIS_FOLDER_PATH = prop.getProperty("THIS_FOLDER_PATH");
+			IMAGE_FOLDER_PATH = prop.getProperty("IMAGE_FOLDER_PATH");
 		} catch (FileNotFoundException e) {
 			//no config file
-			THIS_FOLDER_PATH = "/home/orangepi/jars/AspectiBot/";
+			THIS_FOLDER_PATH = "/home/orangepi/jars/IconChanger/";
+			IMAGE_FOLDER_PATH = "/home/orangepi/jars/IconChanger/src/images/";
 		} finally {
 			//load credentials
 			loadCredentials();
@@ -68,6 +71,7 @@ public class IconChanger {
 		// set up JDA
 		jda = JDABuilder.createLight(discordToken).build();
 		jda.getPresence().setStatus(OnlineStatus.ONLINE);
+		jda.getPresence().setActivity(Activity.playing("/setup"));
 		jda.addEventListener(new Setup());
 		
 		// set up Twitch4J

@@ -1,17 +1,23 @@
 package iconChanger;
 
+import java.io.File;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
+import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
+import net.dv8tion.jda.api.utils.FileUpload;
 
 public class Setup extends ListenerAdapter {
 
@@ -74,7 +80,7 @@ public class Setup extends ListenerAdapter {
 	
 	public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
 		if(event.getName().equals("setup")) {
-			String channel = event.getOption("channel").getAsString();
+			String twitchChannel = event.getOption("channel").getAsString();
 			
 			
 			
@@ -91,8 +97,50 @@ public class Setup extends ListenerAdapter {
 //			Server newServer = null;
 //			IconChanger.map.put(channelName, newServer);
 			
+			boolean channelExists = false;
 			
-			event.reply(channel + " has been linked!").queue();
+			try {
+				channelExists = IconChanger.twitchClient.getClientHelper().enableStreamEventListener(twitchChannel) != null;
+			} catch(Exception e) {
+				event.reply("invalid twitch username!").setEphemeral(true).queue();
+			}
+			if(channelExists) {
+				
+				//create the stream object
+				//then set that they're setup to true
+				//and use that to check if they're duplicate
+				try {
+					
+					File bgImage = new File(IconChanger.IMAGE_FOLDER_PATH + "blurBACKGROUND.png");
+					FileUpload bgUpload = FileUpload.fromData(bgImage, "blurBACKGROUND.png");
+					
+					
+					EmbedBuilder eb = new EmbedBuilder();
+					eb.setTitle("Choose a live icon type");
+					eb.setImage("attachment://blurBACKGROUND.png");
+					eb.setFooter("😊 btw you're cute today");
+					
+					StringSelectMenu.Builder menu = StringSelectMenu.create("setup");
+					menu.addOption("1", "1", "LIVE appears at the top");
+					menu.addOption("2", "2", "LIVE appears at the bottom");
+					menu.addOption("3", "3", "LIVE appears in the middle");
+					menu.addOption("4", "4", "Outer red circle");
+					
+					menu.setPlaceholder("Choose a type");
+					
+					
+					InteractionHook messageReply = event.deferReply().complete();
+					messageReply.sendMessage("").setFiles(bgUpload).addEmbeds(eb.build()).addActionRow(menu.build()).complete();
+					
+					
+					
+				} catch(NullPointerException e) {
+					LOG.error("onSlashCommandInteraction: BACKGROUND.png not found!");
+				}
+				
+			} else {
+				event.reply(twitchChannel + " does not exist! double check the spelling!").setEphemeral(true).queue();
+			}
 		}
 	}
 	
