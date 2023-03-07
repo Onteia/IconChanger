@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.utils.FileUpload;
 
 public class ImageProcessing {
 
@@ -30,10 +31,27 @@ public class ImageProcessing {
 		} catch (ExecutionException e) {
 			LOG.error("downloadIcon: an error occurred while downloading the file!");
 			e.printStackTrace();
-		}
-		
+		}	
 		
 		return file;
+		
+	}
+	
+	
+	public static File createBanner(Server discordServer) {
+		
+		File banner = null;
+		
+		File backgroundFile = new File(IconChanger.IMAGE_FOLDER_PATH + "BACKGROUND.png");
+		
+		File iconImage = discordServer.getOfflineIcon();
+		
+		File overlayFile = new File(IconChanger.IMAGE_FOLDER_PATH + "OVERLAY.png");
+		
+		
+		
+		
+		return banner;
 		
 	}
 	

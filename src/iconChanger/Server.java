@@ -26,14 +26,6 @@ public class Server {
 		LIVE,
 		OFFLINE;
 	}
-	
-	public enum IconType {
-		NONE,
-		TOP,
-		MIDDLE,
-		BOTTOM,
-		CIRCLE;
-	}
 
 	private String twitchChannelName;
 	private Guild discordServer;
@@ -41,23 +33,20 @@ public class Server {
 	//public String liveIconLink;
 	//public String offlineIconLink;
 	
+	private File liveIcon;
 	private File offlineIcon;
 	
-	private IconType iconType;
 	private StreamStatus streamStatus;
 	
-	public Server(String twitchChannelName, Guild discordServer) {
+	public Server(String twitchChannelName, Guild discordServer, File liveIcon, File offlineIcon) {
 		
 		this.twitchChannelName = twitchChannelName;
 		this.discordServer = discordServer;
+		this.liveIcon = liveIcon;
+		this.offlineIcon = offlineIcon;
 		
-		this.setIconType(IconType.NONE);
 		this.setStreamStatus(StreamStatus.OFFLINE);
 		
-		String iconLocation = IconChanger.IMAGE_FOLDER_PATH + twitchChannelName + discordServer.getId() + ".png";
-		this.offlineIcon = ImageProcessing.downloadIcon(discordServer, iconLocation);
-		
-		System.out.println(this.offlineIcon.toString());
 		LOG.info("Server: Discord server [" + discordServer.getId() + "] was added!");
 		
 	}
@@ -84,22 +73,6 @@ public class Server {
 	public File getOfflineIcon() {
 		return this.offlineIcon;
 	}
-
-
-
-
-	public IconType getIconType() {
-		return iconType;
-	}
-
-
-
-
-	public void setIconType(IconType iconType) {
-		this.iconType = iconType;
-	}
-
-
 
 
 	public StreamStatus getStreamStatus() {

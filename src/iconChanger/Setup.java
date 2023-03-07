@@ -1,13 +1,15 @@
 package iconChanger;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Icon;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -16,8 +18,6 @@ import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
-import net.dv8tion.jda.api.utils.FileUpload;
 
 public class Setup extends ListenerAdapter {
 
@@ -70,6 +70,8 @@ public class Setup extends ListenerAdapter {
 				Commands.slash("setup", "set up icon changing :)")
 				.setDefaultPermissions(DefaultMemberPermissions.enabledFor(Permission.MANAGE_SERVER))
 				.addOption(OptionType.STRING, "channel", "the twitch channel to link to the icon", true)
+				.addOption(OptionType.ATTACHMENT, "live-icon", "the icon the discord server should switch to", true)
+				.addOption(OptionType.ATTACHMENT, "offline-icon", "upload an offline icon instead of using the current server icon", false)
 			).queue();
 	}
 	
@@ -80,7 +82,7 @@ public class Setup extends ListenerAdapter {
 	
 	public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
 		if(event.getName().equals("setup")) {
-			String twitchChannel = event.getOption("channel").getAsString();
+			String twitchChannel = event.getOption("channel").getAsString().toLowerCase();
 			
 			
 			
@@ -111,38 +113,49 @@ public class Setup extends ListenerAdapter {
 				//and use that to check if they're duplicate
 				try {
 					
-					Server newServer = new Server(twitchChannel, event.getGuild());
+					final int WIDTH = 128;
+					final int HEIGHT = 128;
 					
+					Guild discordServer = event.getGuild();
 					
-					File bgImage = new File(IconChanger.IMAGE_FOLDER_PATH + "blurBACKGROUND.png");
-					FileUpload bgUpload = FileUpload.fromData(bgImage, "blurBACKGROUND.png");
+					String serverFolderPath = IconChanger.IMAGE_FOLDER_PATH + discordServer.getId() + File.separator;
+					File serverFolder = new File(serverFolderPath);
+					serverFolder.mkdir();
 					
-					File iconImage = newServer.getOfflineIcon();
-					FileUpload iconUpload = FileUpload.fromData(iconImage, "icon.png");
-					
-					EmbedBuilder eb = new EmbedBuilder();
-					eb.setTitle("Choose a live icon type");
-					eb.setImage("attachment://icon.png");
-					eb.setFooter("😊 btw you're cute today");
-					
-					StringSelectMenu.Builder menu = StringSelectMenu.create("setup");
-					menu.addOption("1", "1", "LIVE appears at the top");
-					menu.addOption("2", "2", "LIVE appears at the bottom");
-					menu.addOption("3", "3", "LIVE appears in the middle");
-					menu.addOption("4", "4", "Outer red circle");
-					
-					menu.setPlaceholder("Choose a type");
+					File liveIconLocation = new File(serverFolderPath + "live.png");
+					liveIconLocation.createNewFile();
+					File liveIcon = event.getOption("live-icon").getAsAttachment().getProxy().downloadToFile(liveIconLocation, WIDTH, HEIGHT).get();
 					
 					
 					
+					File offlineIconLocation = new File(serverFolderPath+ "offline.png");
+					offlineIconLocation.createNewFile();
+					File offlineIcon;
+					try {
+						offlineIcon = event.getOption("offline-icon").getAsAttachment().getProxy().downloadToFile(offlineIconLocation, WIDTH, HEIGHT).get();
+						//set the server's icon to this offline icon
+						Icon newIcon = Icon.from(offlineIcon);
+						discordServer.getManager().setIcon(newIcon).complete();
+					} catch (Exception e) {
+						//if optional argument is null
+						offlineIcon = discordServer.getIcon().downloadToFile(offlineIconLocation).get();
+					}
 					
-					InteractionHook messageReply = event.deferReply().complete();
-					messageReply.sendMessage("").setFiles(iconUpload).addEmbeds(eb.build()).addActionRow(menu.build()).complete();
+				
+					
+					Server newServer = new Server(twitchChannel, discordServer, liveIcon, offlineIcon);
+					
+					
+					event.reply(twitchChannel + " has been linked to this server!").complete();
 					
 					//LOG that the server has been linked to the channel
 					
-				} catch(NullPointerException e) {
-					LOG.error("onSlashCommandInteraction: BACKGROUND.png not found!");
+				} catch (InterruptedException e) {
+					LOG.error("onSlashCommandInteraction: unable to download live-icon to the specified file!");
+				} catch (ExecutionException e) {
+					LOG.error("onSlashCommandInteraction: exception on trying to get the proxied image as a file object!");
+				} catch (IOException e) {
+					LOG.error("onSlashCommandInteraction: unable to create location files!");
 				}
 				
 			} else {
