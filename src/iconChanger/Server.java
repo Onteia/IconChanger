@@ -12,6 +12,7 @@ import javax.imageio.ImageIO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Icon;
 
 // Manages the discord servers and keeps track of what server is
@@ -27,54 +28,40 @@ public class Server {
 	}
 	
 	public enum IconType {
+		NONE,
 		TOP,
 		MIDDLE,
 		BOTTOM,
 		CIRCLE;
 	}
 
-	public String twitchChannelName;
-	public String discordServerID;
-	public String liveIconLink;
-	public String offlineIconLink;
+	private String twitchChannelName;
+	private Guild discordServer;
+	//public String discordServerID;
+	//public String liveIconLink;
+	//public String offlineIconLink;
 	
-	public Server(String twitchChannelName, 
-					String discordServerID,
-					String liveIconLink,
-					String offlineIconLink) {
+	private File offlineIcon;
+	
+	private IconType iconType;
+	private StreamStatus streamStatus;
+	
+	public Server(String twitchChannelName, Guild discordServer) {
 		
 		this.twitchChannelName = twitchChannelName;
-		this.discordServerID = discordServerID;
-		this.liveIconLink = liveIconLink;
-		this.offlineIconLink = offlineIconLink;
+		this.discordServer = discordServer;
 		
-		LOG.info("Server: New discord server was added!");
+		this.setIconType(IconType.NONE);
+		this.setStreamStatus(StreamStatus.OFFLINE);
+		
+		String iconLocation = IconChanger.IMAGE_FOLDER_PATH + twitchChannelName + discordServer.getId() + ".png";
+		this.offlineIcon = ImageProcessing.downloadIcon(discordServer, iconLocation);
+		
+		System.out.println(this.offlineIcon.toString());
+		LOG.info("Server: Discord server [" + discordServer.getId() + "] was added!");
 		
 	}
 	
-	private static Icon iconFromUrl(String url) {
-		
-		Icon newServerIcon = null;
-		
-		try {
-			URL iconURL = new URL(url);
-			BufferedImage iconImage = ImageIO.read(iconURL);
-			
-			// converts the iconImage from a BufferedImage to a byte array
-			byte[] buffer = ((DataBufferByte)(iconImage).getRaster().getDataBuffer()).getData();
-			
-			// use the JDA Icon() thing with byte[] to return an Icon object and set newServerIcon equal to that
-			
-			
-		} catch (MalformedURLException e) {
-			LOG.error("iconFromUrl: invalid URL: " + url + "!");
-		} catch (IOException e) {
-			LOG.error("iconFromUrl: unable to read iconURL!");
-		}
-		
-		return newServerIcon;
-		
-	}
 	
 	
 	
@@ -83,17 +70,47 @@ public class Server {
 	}
 	
 	public String getServerID() {
-		return this.discordServerID;
+		return this.discordServer.getId();
 	}
 	
-	public File getLiveIcon() {
+	public Icon getLiveIcon() {
 		//return this.liveIcon;
+		
+		//combine the icon with the overlay
+		
 		return null;
 	}
 	
 	public File getOfflineIcon() {
-		//return this.offlineIcon;
-		return null;
+		return this.offlineIcon;
+	}
+
+
+
+
+	public IconType getIconType() {
+		return iconType;
+	}
+
+
+
+
+	public void setIconType(IconType iconType) {
+		this.iconType = iconType;
+	}
+
+
+
+
+	public StreamStatus getStreamStatus() {
+		return streamStatus;
+	}
+
+
+
+
+	public void setStreamStatus(StreamStatus streamStatus) {
+		this.streamStatus = streamStatus;
 	}
 	
 }

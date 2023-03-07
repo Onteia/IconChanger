@@ -111,13 +111,18 @@ public class Setup extends ListenerAdapter {
 				//and use that to check if they're duplicate
 				try {
 					
+					Server newServer = new Server(twitchChannel, event.getGuild());
+					
+					
 					File bgImage = new File(IconChanger.IMAGE_FOLDER_PATH + "blurBACKGROUND.png");
 					FileUpload bgUpload = FileUpload.fromData(bgImage, "blurBACKGROUND.png");
 					
+					File iconImage = newServer.getOfflineIcon();
+					FileUpload iconUpload = FileUpload.fromData(iconImage, "icon.png");
 					
 					EmbedBuilder eb = new EmbedBuilder();
 					eb.setTitle("Choose a live icon type");
-					eb.setImage("attachment://blurBACKGROUND.png");
+					eb.setImage("attachment://icon.png");
 					eb.setFooter("😊 btw you're cute today");
 					
 					StringSelectMenu.Builder menu = StringSelectMenu.create("setup");
@@ -129,10 +134,12 @@ public class Setup extends ListenerAdapter {
 					menu.setPlaceholder("Choose a type");
 					
 					
+					
+					
 					InteractionHook messageReply = event.deferReply().complete();
-					messageReply.sendMessage("").setFiles(bgUpload).addEmbeds(eb.build()).addActionRow(menu.build()).complete();
+					messageReply.sendMessage("").setFiles(iconUpload).addEmbeds(eb.build()).addActionRow(menu.build()).complete();
 					
-					
+					//LOG that the server has been linked to the channel
 					
 				} catch(NullPointerException e) {
 					LOG.error("onSlashCommandInteraction: BACKGROUND.png not found!");
