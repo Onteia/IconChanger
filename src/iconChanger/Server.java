@@ -62,25 +62,17 @@ public class Server {
 		return this.discordServer.getId();
 	}
 	
-	public Icon getLiveIcon() {
-		//return this.liveIcon;
-		
-		//combine the icon with the overlay
-		
-		return null;
+	public File getLiveIcon() {	
+		return this.liveIcon;
 	}
 	
 	public File getOfflineIcon() {
 		return this.offlineIcon;
 	}
 
-
 	public StreamStatus getStreamStatus() {
 		return streamStatus;
 	}
-
-
-
 
 	public void setStreamStatus(StreamStatus streamStatus) {
 		this.streamStatus = streamStatus;

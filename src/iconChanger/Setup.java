@@ -73,6 +73,8 @@ public class Setup extends ListenerAdapter {
 				.addOption(OptionType.ATTACHMENT, "live-icon", "the icon the discord server should switch to", true)
 				.addOption(OptionType.ATTACHMENT, "offline-icon", "upload an offline icon instead of using the current server icon", false)
 			).queue();
+		
+		//maybe could add a /reset command
 	}
 	
 	//possibly add onGuildLeave to delete any info related to server
@@ -84,20 +86,7 @@ public class Setup extends ListenerAdapter {
 		if(event.getName().equals("setup")) {
 			String twitchChannel = event.getOption("channel").getAsString().toLowerCase();
 			
-			
-			
-			
-//			//check that there's only one channel linked
-//			
-//			
-//			//go through the process of getting the offline and live icons, and the twitch user
-//			
-//			//this will cerate the specific server object
-//			
-//			//then map the twitch channel name to the server object with this line
-//			String channelName = "";
-//			Server newServer = null;
-//			IconChanger.map.put(channelName, newServer);
+			//IconChanger.map.put(channelId, newServer);
 			
 			boolean channelExists = false;
 			

@@ -93,7 +93,7 @@ public class IconChanger {
 		
 		// if the channel goes live
 		eventManager.onEvent(ChannelGoLiveEvent.class, event -> {
-			String channelId = event.getChannel().getId();
+			String channelId = event.getChannel().getName().toLowerCase();
 			channelWentLive(channelId);
 			
 		});
@@ -101,14 +101,14 @@ public class IconChanger {
 		
 		// if the channel goes offline
 		eventManager.onEvent(ChannelGoOfflineEvent.class, event -> {
-			String channelId = event.getChannel().getId();
+			String channelId = event.getChannel().getName().toLowerCase();
 			channelWentOffline(channelId);
 		});
 	}
 	
 	private static void channelWentLive(String channelId) {
 		
-		//hash map the channelUserId to get the Server object
+		//hash map the channelName to get the Server object
 		
 		System.out.println("live poggies omg omg omg");
 		
