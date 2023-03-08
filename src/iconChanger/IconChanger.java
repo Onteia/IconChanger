@@ -5,7 +5,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.HashMap;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -18,11 +19,15 @@ import com.github.twitch4j.TwitchClient;
 import com.github.twitch4j.TwitchClientBuilder;
 import com.github.twitch4j.events.ChannelGoLiveEvent;
 import com.github.twitch4j.events.ChannelGoOfflineEvent;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 
+import iconChanger.Server.StreamStatus;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Icon;
 
 // TODO: 
 // 	finish the description of this file
@@ -46,7 +51,8 @@ public class IconChanger {
 	public static String test_server = "264217465305825281";
 	public static String test_channel = "280546532728504320";
 	
-	public static HashMap<String, Server> map = new HashMap<String, Server>();
+	//public static HashMap<String, Server> map = new HashMap<String, Server>();
+	public static Multimap<String, Server> channelToServer = ArrayListMultimap.create();
 	private final static Logger LOG = LoggerFactory.getLogger(IconChanger.class);
 	
 	
@@ -88,14 +94,10 @@ public class IconChanger {
 				.withEnableHelix(true)
 				.build();
 		
-		// listen for channel events
-		twitchClient.getClientHelper().enableStreamEventListener("onteia");
-		
 		// if the channel goes live
 		eventManager.onEvent(ChannelGoLiveEvent.class, event -> {
 			String channelId = event.getChannel().getName().toLowerCase();
 			channelWentLive(channelId);
-			
 		});
 		
 		
@@ -106,17 +108,61 @@ public class IconChanger {
 		});
 	}
 	
-	private static void channelWentLive(String channelId) {
+	private static void channelWentLive(String channelName) {
 		
 		//hash map the channelName to get the Server object
+		Collection<Server> serversToUpdate = channelToServer.get(channelName);
 		
-		System.out.println("live poggies omg omg omg");
+		serversToUpdate.forEach(server -> {
+			try {
+				File liveIconFile = server.getLiveIcon();
+				Icon liveIcon = Icon.from(liveIconFile);
+				
+				String guildId = server.getServerID();
+				//set the server's icon to the live icon
+				jda.getGuildById(guildId).getManager().setIcon(liveIcon).complete();
+				
+				if(server.getStreamStatus() == StreamStatus.LIVE) {
+					//if the channel is already somehow live, there is an error
+					LOG.error("channelWentLive: INCONSISTENCY!!! " + channelName + " was already live for [" + guildId + "]!");
+				}
+				
+				server.setStreamStatus(StreamStatus.LIVE);
+				
+				LOG.info("channelWentLive: " + channelName + "! updated [" + server.getServerID() + "]!");
+			} catch (IOException e) {
+				LOG.error("channelWentLive: unable to convert the liveIconFile to an Icon!");
+			}
+		});
 		
 	}
 	
-	private static void channelWentOffline(String channelId) {
+	private static void channelWentOffline(String channelName) {
 		
-		System.out.println("offline sadgies waa waa waa");
+		//hash map the channelName to get the Server object
+		Collection<Server> serversToUpdate = channelToServer.get(channelName);
+		
+		serversToUpdate.forEach(server -> {
+			try {
+				File offlineIconFile = server.getOfflineIcon();
+				Icon offlineIcon = Icon.from(offlineIconFile);
+				
+				String guildId = server.getServerID();
+				//set the server's icon to the offline icon
+				jda.getGuildById(guildId).getManager().setIcon(offlineIcon).complete();
+				
+				if(server.getStreamStatus() == StreamStatus.OFFLINE) {
+					//if the channel is already somehow live, there is an error
+					LOG.error("channelWentLive: INCONSISTENCY!!! " + channelName + " was already offline for [" + guildId + "]!");
+				}
+				
+				server.setStreamStatus(StreamStatus.OFFLINE);
+				
+				LOG.info("channelWentOffline: " + channelName + "! updated [" + server.getServerID() + "]!");
+			} catch (IOException e) {
+				LOG.error("channelWentOffline: unable to convert the offlineIconFile to an Icon!");
+			}
+		});
 		
 	}
 	

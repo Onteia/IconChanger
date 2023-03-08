@@ -1,19 +1,12 @@
 package iconChanger;
 
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-import javax.imageio.ImageIO;
+import java.util.HashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Icon;
 
 // Manages the discord servers and keeps track of what server is
 // linked to what twitch stream
@@ -22,6 +15,8 @@ public class Server {
 
 	private final static Logger LOG = LoggerFactory.getLogger(Server.class);
 
+	private static HashMap<Guild, Server> guildToServer = new HashMap<Guild, Server>();
+	
 	public enum StreamStatus {
 		LIVE,
 		OFFLINE;
@@ -29,10 +24,6 @@ public class Server {
 
 	private String twitchChannelName;
 	private Guild discordServer;
-	//public String discordServerID;
-	//public String liveIconLink;
-	//public String offlineIconLink;
-	
 	private File liveIcon;
 	private File offlineIcon;
 	
@@ -47,12 +38,19 @@ public class Server {
 		
 		this.setStreamStatus(StreamStatus.OFFLINE);
 		
+		//adds the server to the server list for future way of getting it
+		guildToServer.put(discordServer, this);
+		
 		LOG.info("Server: Discord server [" + discordServer.getId() + "] was added!");
 		
 	}
 	
 	
-	
+	public static Server getServer(Guild discordServer) {
+		
+		return guildToServer.get(discordServer);
+		
+	}
 	
 	public String getChannelName() {
 		return this.twitchChannelName;
