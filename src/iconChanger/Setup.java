@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Icon;
+import net.dv8tion.jda.api.entities.Message.Attachment;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -62,8 +63,13 @@ public class Setup extends ListenerAdapter {
 		boolean channelExists = false;
 		
 		//makes IconChanger listen to that stream for events
-		channelExists = IconChanger.twitchClient.getClientHelper().enableStreamEventListener(twitchChannel) != null;
-
+		try {
+			channelExists = IconChanger.twitchClient.getClientHelper().enableStreamEventListener(twitchChannel) != null;
+		} catch (Exception e) {
+			event.reply("invalid channel name!").setEphemeral(true).complete();
+			return;
+		}
+		
 		if(channelExists) {
 			
 			try {
@@ -79,19 +85,60 @@ public class Setup extends ListenerAdapter {
 					reset(discordServer);
 				}
 				
+				Attachment liveAttachment = event.getOption("live-icon").getAsAttachment();
+				//is liveAttachment an image
+				if(!liveAttachment.isImage()) {
+					//if the attachment isn't a picture
+					event.reply("your live-icon must be an image!").setEphemeral(true).complete();
+					return;
+				}
+				
+				//used for getting the smaller value between 128x128 and the downloaded image's dimensions
+				int liveWidth = liveAttachment.getWidth();
+				int liveHeight = liveAttachment.getHeight();
+				
+				Attachment offlineAttachment = null;
+				//used for getting the smaller value between 128x128 and the downloaded image's dimensions
+				int offlineWidth = WIDTH;
+				int offlineHeight = HEIGHT;
+				try {
+					offlineAttachment = event.getOption("offline-icon").getAsAttachment();
+					//is offlineAttachment an image
+					if(!offlineAttachment.isImage()) {
+						//if the attachment isn't a picture
+						event.reply("your offline-icon must be an image!").setEphemeral(true).complete();
+						return;
+					}
+					
+					offlineWidth = offlineAttachment.getWidth();
+					offlineHeight = offlineAttachment.getHeight();
+					
+				} catch (Exception e) {
+					//no optional second file
+				}
+				
 				String serverFolderPath = IconChanger.IMAGE_FOLDER_PATH + discordServer.getId() + File.separator;
 				File serverFolder = new File(serverFolderPath);
 				serverFolder.mkdir();
 				
 				File liveIconLocation = new File(serverFolderPath + "live.png");
 				liveIconLocation.createNewFile();
-				File liveIcon = event.getOption("live-icon").getAsAttachment().getProxy().downloadToFile(liveIconLocation, WIDTH, HEIGHT).get();
+				File liveIcon = liveAttachment.getProxy()
+						.downloadToFile(liveIconLocation, Math.min(WIDTH, liveWidth), Math.min(HEIGHT, liveHeight))
+						.get();
 				
 				File offlineIconLocation = new File(serverFolderPath + "offline.png");
 				offlineIconLocation.createNewFile();
 				File offlineIcon;
 				try {
-					offlineIcon = event.getOption("offline-icon").getAsAttachment().getProxy().downloadToFile(offlineIconLocation, WIDTH, HEIGHT).get();
+					offlineIcon = offlineAttachment.getProxy()
+							.downloadToFile(
+									offlineIconLocation, 
+									Math.min(WIDTH, 
+											offlineWidth), 
+									Math.min(HEIGHT, 
+											offlineHeight))
+							.get();
 					//set the server's icon to this offline icon
 					Icon newIcon = Icon.from(offlineIcon);
 					discordServer.getManager().setIcon(newIcon).complete();
@@ -119,6 +166,7 @@ public class Setup extends ListenerAdapter {
 			
 		} else {
 			event.reply(twitchChannel + " does not exist or this server has already been set up. use `/reset` if this is the case.").setEphemeral(true).queue();
+			return;
 		}
 	
 	}

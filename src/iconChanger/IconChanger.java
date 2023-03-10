@@ -51,7 +51,6 @@ public class IconChanger {
 	public static String test_server = "264217465305825281";
 	public static String test_channel = "280546532728504320";
 	
-	//public static HashMap<String, Server> map = new HashMap<String, Server>();
 	public static Multimap<String, Server> channelToServer = ArrayListMultimap.create();
 	private final static Logger LOG = LoggerFactory.getLogger(IconChanger.class);
 	
