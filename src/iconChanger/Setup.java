@@ -75,11 +75,12 @@ public class Setup extends ListenerAdapter {
 			twitchChannel = splitTwitchChannel[splitTwitchChannel.length - 1];
 		}
 		
-		boolean channelExists = false;
-		
 		//makes IconChanger listen to that stream for events
 		try {
-			channelExists = IconChanger.twitchClient.getClientHelper().enableStreamEventListener(twitchChannel) != null;
+			if(!IconChanger.channelToServer.containsKey(twitchChannel)) {
+				//if it's not a duplicate channel, listen for it
+				IconChanger.twitchClient.getClientHelper().enableStreamEventListener(twitchChannel);
+			}
 		} catch (Exception e) {
 			event.reply("invalid channel name!").setEphemeral(true).queue();
 			return;
@@ -157,7 +158,12 @@ public class Setup extends ListenerAdapter {
 				discordServer.getManager().setIcon(newIcon).queue();
 			} catch (Exception e) {
 				//if optional argument is null
-				offlineIcon = discordServer.getIcon().downloadToFile(offlineIconLocation).get();
+				try {
+					offlineIcon = discordServer.getIcon().downloadToFile(offlineIconLocation).get();
+				} catch(NullPointerException n) {
+					event.reply("you need to set an offline icon, or add a default server icon");
+					return;
+				}
 			}
 			
 			Server newServer = new Server(twitchChannel, discordServer, liveIcon, offlineIcon);
