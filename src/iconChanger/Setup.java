@@ -62,7 +62,7 @@ public class Setup extends ListenerAdapter {
 		
 		boolean channelExists = false;
 		
-		event.deferReply().queue();
+		//event.deferReply().queue();
 		
 		//makes IconChanger listen to that stream for events
 		try {

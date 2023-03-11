@@ -1,4 +1,5 @@
 *.auth
+*.jar
 src/images/*
-target
-src/config.properties/
+target/
+src/config.properties
