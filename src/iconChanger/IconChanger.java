@@ -4,9 +4,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Collection;
 import java.util.Properties;
 
@@ -96,8 +98,11 @@ public class IconChanger {
 		
 		
 		//read the serialized map file
-		readSaveFile();
+		loadMap();
 		
+		//call some function in Server that turns the null discordServer 
+		//variable into a Guild object from the serverId (jda.getGuildById)
+		initialize();
 		
 		// if the channel goes live
 		eventManager.onEvent(ChannelGoLiveEvent.class, event -> {
@@ -139,7 +144,7 @@ public class IconChanger {
 				LOG.error("channelWentLive: unable to convert the liveIconFile to an Icon!");
 			}
 		});
-		
+		saveMap();
 	}
 	
 	private static void channelWentOffline(String channelName) {
@@ -168,11 +173,37 @@ public class IconChanger {
 				LOG.error("channelWentOffline: unable to convert the offlineIconFile to an Icon!");
 			}
 		});
-		
+		saveMap();
+	}
+	
+	private static boolean subscribe(String channel) {
+		boolean channelSubscribed = twitchClient.getClientHelper().enableStreamEventListener(channel) != null;
+		if(!channelSubscribed) {
+			LOG.error("subscribe: unable to subscribe to " + channel);
+		}
+		return channelSubscribed;
+	}
+	
+	private static void initialize() {
+		channelToServer.keys().forEach(channel -> {
+			
+			//subscribe to stream events of channels in the map
+			subscribe(channel);
+			
+			channelToServer.get(channel).forEach(server -> {
+				boolean status = server.initialize();
+				
+				if(status) {	
+					LOG.info("initialize: [" + server.getServerID() + "] successfully initialized!");
+				} else {
+					LOG.error("initialize: unable to initialize [" + server.getServerID() + "]!");
+				}
+			});
+		});
 	}
 	
 	@SuppressWarnings("unchecked")
-	private static void readSaveFile() {
+	private static void loadMap() {
 		
 		try (
 				FileInputStream fileIn = new FileInputStream(THIS_FOLDER_PATH + File.separator + "savedata");
@@ -183,8 +214,23 @@ public class IconChanger {
 			
 		} catch (IOException e) {
 			LOG.error("readSaveFile: unable to read the save file!");
+			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
 			LOG.error("readSaveFile: class of the save file couldn't be determined!");
+		}
+		
+	}
+	
+	public static void saveMap() {
+		
+		try (
+				FileOutputStream fileOut = new FileOutputStream(IconChanger.THIS_FOLDER_PATH + File.separator + "savedata");
+				ObjectOutputStream out = new ObjectOutputStream(fileOut);
+		){
+			out.writeObject(IconChanger.channelToServer);
+
+		} catch (IOException e) {
+			LOG.error("saveMap: unable to write the map to the save file!");
 		}
 		
 	}
