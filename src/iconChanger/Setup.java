@@ -233,7 +233,7 @@ public class Setup extends ListenerAdapter {
 		Guild guild = event.getGuild();
 		Server server = Server.getServer(guild);
 		
-		if(IconChanger.channelToServer.containsValue(guild)) {
+		if(IconChanger.channelToServer.containsValue(server)) {
 			event.reply("your server is set up for *" + server.getChannelName() + "*!").queue();
 		} else {
 			event.reply("your server is not set up!").queue();
