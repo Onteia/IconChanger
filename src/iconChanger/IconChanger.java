@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.Collection;
 import java.util.Properties;
 
@@ -93,6 +94,11 @@ public class IconChanger {
 				.withEnableHelix(true)
 				.build();
 		
+		
+		//read the serialized map file
+		readSaveFile();
+		
+		
 		// if the channel goes live
 		eventManager.onEvent(ChannelGoLiveEvent.class, event -> {
 			String channelId = event.getChannel().getName().toLowerCase();
@@ -162,6 +168,24 @@ public class IconChanger {
 				LOG.error("channelWentOffline: unable to convert the offlineIconFile to an Icon!");
 			}
 		});
+		
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static void readSaveFile() {
+		
+		try (
+				FileInputStream fileIn = new FileInputStream(THIS_FOLDER_PATH + File.separator + "savedata");
+				ObjectInputStream in = new ObjectInputStream(fileIn);
+		) {
+			
+			channelToServer = (ArrayListMultimap<String, Server>) in.readObject();
+			
+		} catch (IOException e) {
+			LOG.error("readSaveFile: unable to read the save file!");
+		} catch (ClassNotFoundException e) {
+			LOG.error("readSaveFile: class of the save file couldn't be determined!");
+		}
 		
 	}
 	

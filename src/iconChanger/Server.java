@@ -1,6 +1,7 @@
 package iconChanger;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.HashMap;
 
 import org.slf4j.Logger;
@@ -11,7 +12,7 @@ import net.dv8tion.jda.api.entities.Guild;
 // Manages the discord servers and keeps track of what server is
 // linked to what twitch stream
 
-public class Server {
+public class Server implements Serializable {
 
 	private final static Logger LOG = LoggerFactory.getLogger(Server.class);
 
