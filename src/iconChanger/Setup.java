@@ -54,8 +54,12 @@ public class Setup extends ListenerAdapter {
 		if(eventName.equals("setup")) {
 			setup(event);
 		} else if(eventName.equals("reset")) {
-			reset(event.getGuild());
-			event.reply("your live icon has been reset!").queue();
+			boolean status = reset(event.getGuild());
+			if(status) {
+				event.reply("your live icon has been reset!").queue();
+			} else {
+				event.reply("your server hasn't been set up!").queue();
+			}
 		} else if(eventName.equals("status")) {
 			status(event);
 		}
@@ -188,9 +192,13 @@ public class Setup extends ListenerAdapter {
 	}
 	
 	
-	private void reset(Guild discordServer) {
+	private boolean reset(Guild discordServer) {
 		
 		Server server = Server.getServer(discordServer);
+		if(server == null) {
+			return false;	
+		}
+
 		File parentFolder = null;
 		try {
 			parentFolder = server.getLiveIcon().getParentFile();
@@ -217,6 +225,7 @@ public class Setup extends ListenerAdapter {
 		
 		LOG.info("reset: [" + discordServer.getId() + "] has been reset!");
 		
+		return true;
 	}
 	
 	private void status(SlashCommandInteractionEvent event) {
