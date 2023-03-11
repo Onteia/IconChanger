@@ -51,7 +51,7 @@ public class Setup extends ListenerAdapter {
 			setup(event);
 		} else if(eventName.equals("reset")) {
 			reset(event.getGuild());
-			event.reply("your live icon has been reset!").complete();
+			event.reply("your live icon has been reset!").queue();
 		}
 		
 	}
@@ -62,13 +62,11 @@ public class Setup extends ListenerAdapter {
 		
 		boolean channelExists = false;
 		
-		//event.deferReply().queue();
-		
 		//makes IconChanger listen to that stream for events
 		try {
 			channelExists = IconChanger.twitchClient.getClientHelper().enableStreamEventListener(twitchChannel) != null;
 		} catch (Exception e) {
-			event.reply("invalid channel name!").setEphemeral(true).complete();
+			event.reply("invalid channel name!").setEphemeral(true).queue();
 			return;
 		}
 		
@@ -91,7 +89,7 @@ public class Setup extends ListenerAdapter {
 				//is liveAttachment an image
 				if(!liveAttachment.isImage()) {
 					//if the attachment isn't a picture
-					event.reply("your live-icon must be an image!").setEphemeral(true).complete();
+					event.reply("your live-icon must be an image!").setEphemeral(true).queue();
 					return;
 				}
 				
@@ -108,7 +106,7 @@ public class Setup extends ListenerAdapter {
 					//is offlineAttachment an image
 					if(!offlineAttachment.isImage()) {
 						//if the attachment isn't a picture
-						event.reply("your offline-icon must be an image!").setEphemeral(true).complete();
+						event.reply("your offline-icon must be an image!").setEphemeral(true).queue();
 						return;
 					}
 					
@@ -143,17 +141,18 @@ public class Setup extends ListenerAdapter {
 							.get();
 					//set the server's icon to this offline icon
 					Icon newIcon = Icon.from(offlineIcon);
-					discordServer.getManager().setIcon(newIcon).complete();
+					discordServer.getManager().setIcon(newIcon).queue();
 				} catch (Exception e) {
 					//if optional argument is null
 					offlineIcon = discordServer.getIcon().downloadToFile(offlineIconLocation).get();
 				}
 				
 				Server newServer = new Server(twitchChannel, discordServer, liveIcon, offlineIcon);
-				//IconChanger.map.put(channelId, newServer);
+				
+				//add the channel and server to the map
 				IconChanger.channelToServer.put(twitchChannel, newServer);
 				
-				event.reply(twitchChannel + " has been linked to this server!").complete();
+				event.reply(twitchChannel + " has been linked to this server!").queue();
 				
 				//LOG that the server has been linked to the channel
 				LOG.info("setup: " + twitchChannel + " has been linked to [" + discordServer.getId() + "]!");
