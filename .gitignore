@@ -1,2 +1,4 @@
 *.auth
 src/images/*
+target
+src/config.properties/

@@ -62,6 +62,8 @@ public class Setup extends ListenerAdapter {
 		
 		boolean channelExists = false;
 		
+		event.deferReply().queue();
+		
 		//makes IconChanger listen to that stream for events
 		try {
 			channelExists = IconChanger.twitchClient.getClientHelper().enableStreamEventListener(twitchChannel) != null;
