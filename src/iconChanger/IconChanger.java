@@ -209,12 +209,9 @@ public class IconChanger {
 				FileInputStream fileIn = new FileInputStream(THIS_FOLDER_PATH + File.separator + "savedata");
 				ObjectInputStream in = new ObjectInputStream(fileIn);
 		) {
-			
 			channelToServer = (ArrayListMultimap<String, Server>) in.readObject();
-			
 		} catch (IOException e) {
-			LOG.error("readSaveFile: unable to read the save file!");
-			e.printStackTrace();
+			LOG.info("readSaveFile: unable to read the save file, could be an issue if not starting fresh!");
 		} catch (ClassNotFoundException e) {
 			LOG.error("readSaveFile: class of the save file couldn't be determined!");
 		}

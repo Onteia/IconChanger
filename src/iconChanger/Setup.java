@@ -66,6 +66,15 @@ public class Setup extends ListenerAdapter {
 
 		String twitchChannel = event.getOption("channel").getAsString().toLowerCase();
 		
+		//if the user included a link
+		if(twitchChannel.contains(".tv/")) {
+			//this will split the link into an array like this:
+			//https://twitch.tv/name -> [https:, twitch.tv, name]
+			String[] splitTwitchChannel = twitchChannel.split("/");
+			//get the last value to get the channel name
+			twitchChannel = splitTwitchChannel[splitTwitchChannel.length - 1];
+		}
+		
 		boolean channelExists = false;
 		
 		//makes IconChanger listen to that stream for events
