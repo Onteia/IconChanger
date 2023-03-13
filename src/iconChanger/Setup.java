@@ -104,6 +104,7 @@ public class Setup extends ListenerAdapter {
 			}
 			
 			Attachment liveAttachment = event.getOption("live-icon").getAsAttachment();
+			
 			//is liveAttachment an image
 			if(!liveAttachment.isImage()) {
 				//if the attachment isn't a picture
@@ -111,11 +112,15 @@ public class Setup extends ListenerAdapter {
 				return;
 			}
 			
+			String liveExtension = liveAttachment.getFileExtension();
+			
+			
 			//used for getting the smaller value between 128x128 and the downloaded image's dimensions
 			int liveWidth = liveAttachment.getWidth();
 			int liveHeight = liveAttachment.getHeight();
 			
 			Attachment offlineAttachment = null;
+			String offlineExtension = "";
 			//used for getting the smaller value between 128x128 and the downloaded image's dimensions
 			int offlineWidth = WIDTH;
 			int offlineHeight = HEIGHT;
@@ -128,24 +133,47 @@ public class Setup extends ListenerAdapter {
 					return;
 				}
 				
+				offlineExtension = offlineAttachment.getFileExtension();
+								
 				offlineWidth = offlineAttachment.getWidth();
 				offlineHeight = offlineAttachment.getHeight();
 				
 			} catch (Exception e) {
 				//no optional second file
+				String[] iconLink = discordServer.getIconUrl().split("\\.");
+				offlineExtension = iconLink[iconLink.length - 1];
+			}
+			
+			String[] validExtensions = {"png", "jpg", "jpeg", "gif"};
+			
+			boolean foundValidLive = false;
+			boolean foundValidOffline = false;
+			for(String extension : validExtensions) {
+				if(liveExtension.equalsIgnoreCase(extension)) {
+					foundValidLive = true;
+				}
+				
+				if(offlineExtension.equalsIgnoreCase(extension)) {
+					foundValidOffline = true;
+				}
+			}
+			
+			if(!foundValidLive || !foundValidOffline) {
+				event.reply("invalid file extension! make sure to either use png, gif, jpg, or jpeg!").queue();
+				return;
 			}
 			
 			String serverFolderPath = IconChanger.IMAGE_FOLDER_PATH + discordServer.getId() + File.separator;
 			File serverFolder = new File(serverFolderPath);
 			serverFolder.mkdir();
 			
-			File liveIconLocation = new File(serverFolderPath + "live.png");
+			File liveIconLocation = new File(serverFolderPath + "live." + liveExtension);
 			liveIconLocation.createNewFile();
 			File liveIcon = liveAttachment.getProxy()
 					.downloadToFile(liveIconLocation, Math.min(WIDTH, liveWidth), Math.min(HEIGHT, liveHeight))
 					.get();
 			
-			File offlineIconLocation = new File(serverFolderPath + "offline.png");
+			File offlineIconLocation = new File(serverFolderPath + "offline." + offlineExtension);
 			offlineIconLocation.createNewFile();
 			File offlineIcon;
 			try {
