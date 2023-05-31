@@ -77,7 +77,7 @@ public class Setup extends ListenerAdapter {
 	}
 	
 	private void setup(SlashCommandInteractionEvent event) {
-
+		
 		String twitchChannel = event.getOption("channel").getAsString().toLowerCase();
 		
 		//if the user included a link
@@ -100,6 +100,8 @@ public class Setup extends ListenerAdapter {
 			return;
 		}
 			
+		event.deferReply().queue();
+		
 		try {
 			
 			final int WIDTH = 128;
@@ -118,7 +120,7 @@ public class Setup extends ListenerAdapter {
 			//is liveAttachment an image
 			if(!liveAttachment.isImage()) {
 				//if the attachment isn't a picture
-				event.reply("your live-icon must be an image!").setEphemeral(true).queue();
+				event.getHook().sendMessage("your live-icon must be an image!").queue();
 				return;
 			}
 			
@@ -138,7 +140,7 @@ public class Setup extends ListenerAdapter {
 				//is offlineAttachment an image
 				if(!offlineAttachment.isImage()) {
 					//if the attachment isn't a picture
-					event.reply("your offline-icon must be an image!").setEphemeral(true).queue();
+					event.getHook().sendMessage("your offline-icon must be an image!").queue();
 					return;
 				}
 				
@@ -149,8 +151,13 @@ public class Setup extends ListenerAdapter {
 				
 			} catch (Exception e) {
 				//no optional second file
-				String[] iconLink = discordServer.getIconUrl().split("\\.");
-				offlineExtension = iconLink[iconLink.length - 1];
+				try {
+					String[] iconLink = discordServer.getIconUrl().split("\\.");
+					offlineExtension = iconLink[iconLink.length - 1];
+				} catch (NullPointerException f) {
+					event.getHook().sendMessage("must set an offline icon!").queue();
+					return;
+				}
 			}
 			
 			String[] validExtensions = {"png", "jpg", "jpeg", "gif"};
@@ -168,7 +175,7 @@ public class Setup extends ListenerAdapter {
 			}
 			
 			if(!foundValidLive || !foundValidOffline) {
-				event.reply("invalid file extension! make sure to either use png, gif, jpg, or jpeg!").queue();
+				event.getHook().sendMessage("invalid file extension! make sure to either use png, gif, jpg, or jpeg!").queue();
 				return;
 			}
 			
@@ -202,7 +209,7 @@ public class Setup extends ListenerAdapter {
 				try {
 					offlineIcon = discordServer.getIcon().downloadToFile(offlineIconLocation).get();
 				} catch(NullPointerException n) {
-					event.reply("you need to set an offline icon, or add a default server icon");
+					event.getHook().sendMessage("you need to set an offline icon, or add a default server icon").queue();
 					return;
 				}
 			}
@@ -213,10 +220,12 @@ public class Setup extends ListenerAdapter {
 			IconChanger.channelToServer.put(twitchChannel, newServer);
 			IconChanger.saveMap();
 			
-			event.reply(twitchChannel + " has been linked to this server!").queue();
+			//event.reply(twitchChannel + " has been linked to this server!").queue();
+			event.getHook().sendMessage(twitchChannel + " has been linked to this server!").queue();
 			
 			//LOG that the server has been linked to the channel
 			LOG.info("setup: " + twitchChannel + " has been linked to [" + discordServer.getId() + "]!");
+			return;
 			
 		} catch (InterruptedException e) {
 			LOG.error("setup: unable to download live-icon to the specified file!");
@@ -225,7 +234,7 @@ public class Setup extends ListenerAdapter {
 		} catch (IOException e) {
 			LOG.error("setup: unable to create location files!");
 		}
-			
+		event.getHook().sendMessage("something has gone horribly wrong, please try again!").queue();
 	}
 	
 	private boolean reset(Guild discordServer) {
@@ -257,7 +266,6 @@ public class Setup extends ListenerAdapter {
 		if(!IconChanger.channelToServer.containsKey(server.getChannelName())) {
 			IconChanger.twitchClient.getClientHelper().disableStreamEventListener(server.getChannelName());
 		}
-		
 		
 		//update the map
 		IconChanger.saveMap();

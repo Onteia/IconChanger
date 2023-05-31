@@ -210,10 +210,11 @@ public class IconChanger {
 				ObjectInputStream in = new ObjectInputStream(fileIn);
 		) {
 			channelToServer = (ArrayListMultimap<String, Server>) in.readObject();
+			LOG.info("loadMap: map successfully loaded!");
 		} catch (IOException e) {
-			LOG.info("readSaveFile: unable to read the save file, could be an issue if not starting fresh!");
+			LOG.info("loadMap: unable to read the save file, could be an issue if not starting fresh!");
 		} catch (ClassNotFoundException e) {
-			LOG.error("readSaveFile: class of the save file couldn't be determined!");
+			LOG.error("loadMap: class of the save file couldn't be determined!");
 		}
 		
 	}
