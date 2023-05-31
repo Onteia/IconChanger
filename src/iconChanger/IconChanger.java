@@ -51,8 +51,8 @@ public class IconChanger {
 	public static String THIS_FOLDER_PATH;
 	public static String IMAGE_FOLDER_PATH;
 	
-	public static String test_server = "264217465305825281";
-	public static String test_channel = "280546532728504320";
+//	public static String test_server = "264217465305825281";
+//	public static String test_channel = "280546532728504320";
 	
 	public static Multimap<String, Server> channelToServer = ArrayListMultimap.create();
 	private final static Logger LOG = LoggerFactory.getLogger(IconChanger.class);

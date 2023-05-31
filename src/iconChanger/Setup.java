@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.entities.Icon;
 import net.dv8tion.jda.api.entities.Message.Attachment;
 import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
 import net.dv8tion.jda.api.events.guild.GuildLeaveEvent;
+import net.dv8tion.jda.api.events.guild.update.GuildUpdateIconEvent;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
@@ -45,6 +46,15 @@ public class Setup extends ListenerAdapter {
 	public void onGuildLeave(GuildLeaveEvent event) {	
 		reset(event.getGuild());
 		LOG.info("onGuildLeave: left [" + event.getGuild().getId() + "]!");
+	}
+	
+	public void onGuildUpdateIcon(GuildUpdateIconEvent event) {
+		Guild guild = event.getGuild();
+		Server server = Server.getServer(guild);
+		
+		if(server == null) {
+			return;
+		}
 	}
 	
 	public void onSlashCommandInteraction(SlashCommandInteractionEvent event) {
@@ -113,7 +123,6 @@ public class Setup extends ListenerAdapter {
 			}
 			
 			String liveExtension = liveAttachment.getFileExtension();
-			
 			
 			//used for getting the smaller value between 128x128 and the downloaded image's dimensions
 			int liveWidth = liveAttachment.getWidth();
@@ -219,7 +228,6 @@ public class Setup extends ListenerAdapter {
 			
 	}
 	
-	
 	private boolean reset(Guild discordServer) {
 		
 		Server server = Server.getServer(discordServer);
@@ -242,11 +250,14 @@ public class Setup extends ListenerAdapter {
 		//delete the parent folder
 		parentFolder.delete();
 		
-		//stop listening to the channel
-		IconChanger.twitchClient.getClientHelper().disableStreamEventListener(server.getChannelName());
-		
 		//remove the Server from the map
 		IconChanger.channelToServer.remove(server.getChannelName(), server);
+		
+		//stop listening to the channel if no other links to the channel
+		if(!IconChanger.channelToServer.containsKey(server.getChannelName())) {
+			IconChanger.twitchClient.getClientHelper().disableStreamEventListener(server.getChannelName());
+		}
+		
 		
 		//update the map
 		IconChanger.saveMap();

@@ -49,15 +49,11 @@ public class Server implements Serializable {
 		
 	}
 	
-	
 	public static Server getServer(Guild discordServer) {
-		
-		return guildToServer.get(discordServer);
-		
+		return guildToServer.get(discordServer);	
 	}
 	
 	public boolean initialize() {
-		
 		//get the guild from the guild id
 		this.discordServer = IconChanger.jda.getGuildById(this.getServerID());
 		
@@ -67,7 +63,6 @@ public class Server implements Serializable {
 		//return true if the server is not null
 		//return false if the server is null
 		return this.discordServer != null;
-		
 	}
 	
 	public String getChannelName() {
